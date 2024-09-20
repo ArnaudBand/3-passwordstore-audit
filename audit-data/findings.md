@@ -1,4 +1,4 @@
-### [S-#] Storing the password on-chain makes it visible to anyone, and no longer private.
+### [H-1] Storing the password on-chain makes it visible to anyone, and no longer private.
 
 **Description:** 
 
@@ -47,7 +47,7 @@ and the output will be: `myPassword`
 
 As a result, the contract's overall architecture needs to be reconsidered. One approach is to encrypt the password off-chain and store only the encrypted version on-chain. This would mean the user must remember a separate off-chain password to decrypt it. Additionally, it’s advisable to remove the `view` function, as you wouldn't want users to accidentally expose the decryption password in a transaction.
 
-### [S-#] `PasswordStore::setPassword` has no access controls, meaning a non-owner could change the password
+### [H-2] `PasswordStore::setPassword` has no access controls, meaning a non-owner could change the password
 
 **Description:** 
 
@@ -112,4 +112,30 @@ function setPassword(string memory newPassword) external onlyOwner {
 }
 ```
 
-<details>
+</details>
+
+### [I-1] `PaaswordStore::getPassword` natspec indicates a paramter that doesn't exist, causing the natspec to be incorrect
+
+**Description:** 
+
+```javascript
+    /*
+     * @notice This allows only the owner to retrieve the password.
+     * @param newPassword The new password to set.
+     * @audit there is no new password parameter!
+     */
+    function getPassword() external view returns (string memory) {
+
+```
+
+The `PasswordStore::getPassword` function signature is `getPassword()` while the natspec says, it should be `getPassword(string)`
+
+**Impact:** The natspec is incorrect.
+
+**Proof of Concept:** Remove the incorrect natspec line.
+
+**Recommended Mitigation:** 
+
+```diff
+- * @param newPassword the new password to set.
+```
