@@ -94,6 +94,22 @@ Add the following to the `PasswordStore.t.sol` test file.
 
 Add an access control conditional to the `setPassword` function.
 
-```javascript
+<details>
 
+<summary>Code</summary>
+
+```javascript
+modifier onlyOwner() {
+  if(msg.sender !== owner) {
+    revert PasswordStore__NotOwner();
+    _;
+  }
+}
+
+function setPassword(string memory newPassword) external onlyOwner {
+  password = newPassword;
+  emit setNetPassword();
+}
 ```
+
+<details>
