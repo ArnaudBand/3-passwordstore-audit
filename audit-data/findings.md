@@ -46,3 +46,54 @@ and the output will be: `myPassword`
 **Recommended Mitigation:** 
 
 As a result, the contract's overall architecture needs to be reconsidered. One approach is to encrypt the password off-chain and store only the encrypted version on-chain. This would mean the user must remember a separate off-chain password to decrypt it. Additionally, it’s advisable to remove the `view` function, as you wouldn't want users to accidentally expose the decryption password in a transaction.
+
+### [S-#] `PasswordStore::setPassword` has no access controls, meaning a non-owner could change the password
+
+**Description:** 
+
+The `PasswordStore::setStore` function is set to be an an `external` function, however, the natspec of the function and overall purpose of the smart contract is that `This function allows only the owner to set a new password.`
+
+```typescript
+
+    function setPassword(string memory newPassword) external {
+ @>     // @audit any user can set a password: Missing access control
+        s_password = newPassword;
+        emit SetNetPassword();
+    }
+
+```
+
+**Impact:** 
+
+Anyone can set/change the password of the contract, severly breaking the contract intended functionality.
+
+**Proof of Concept:**
+
+Add the following to the `PasswordStore.t.sol` test file.
+
+
+<details>
+
+<summary>Code</summary>
+
+```javascript
+    function test_anyone_can_set_password(address randomUser) public {
+        vm.assume(randomUser != owner);
+        vm.prank(randomUser);
+        string memory expectedPassword = "myNewPassword";
+        passwordStore.setPassword(expectedPassword);
+        vm.prank(owner);
+        string memory actualPassword = passwordStore.getPassword();
+        assertEq(actualPassword, expectedPassword);
+    }
+```
+
+</details>
+
+**Recommended Mitigation:** 
+
+Add an access control conditional to the `setPassword` function.
+
+```javascript
+
+```
